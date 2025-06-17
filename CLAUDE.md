@@ -236,55 +236,70 @@ This repository now contains detailed analysis documentation for building new ER
 
 ### Using This Analysis for ERP Development
 
-**For Business Logic Understanding:**
-- Study `erpnext-business-analysis.md` to understand ERP workflows and business requirements
-- Use the documented business rules and validation patterns as templates
-- Reference the process automation strategies for efficiency improvements
+**IMPORTANT: User prefers learning business logic and workflows over technical implementation details**
 
-**For Technical Implementation:**
-- Follow the architectural patterns in `erpnext-technical-architecture.md`
-- Use the document-centric approach and controller inheritance patterns
-- Implement the security and performance patterns for scalable systems
+**For Business Logic Understanding (PRIMARY FOCUS):**
+- Study `erpnext-business-analysis.md` for comprehensive ERP workflows and business requirements
+- Focus on business rules, validation patterns, and decision logic
+- Understand process automation strategies and business efficiency improvements
+- Learn domain-specific business patterns (Manufacturing, Retail, Services)
 
-**For User Interface Design:**
-- Reference `erpnext-ui-patterns.md` for modern enterprise UI/UX patterns
-- Use the workspace and form design patterns for consistent user experience
-- Implement responsive design and accessibility features from the start
+**For Business Process Flow (SECONDARY FOCUS):**
+- Reference the 3 key workflows: Order-to-Cash, Procure-to-Pay, Plan-to-Produce
+- Understand status transitions and business state management
+- Learn percentage completion tracking and milestone-based processes
+- Study approval workflows and business validation rules
 
-**For Database Design:**
-- Follow the database patterns in `erpnext-database-design.md`
-- Use the metadata-driven schema approach for flexibility
-- Implement the multi-tenancy and audit patterns for enterprise requirements
+**For User Experience and Business Workflows:**
+- Reference `erpnext-ui-patterns.md` for understanding user journey patterns
+- Focus on workspace design that supports business processes
+- Learn progressive disclosure patterns for complex business workflows
+- Understand form design that matches business logic flow
 
-**For Project Planning:**
-- Use `erp-development-roadmap.md` for step-by-step implementation guidance
-- Follow the phased approach for manageable development cycles
-- Reference technology recommendations for informed tool selection
+**For Data Relationships and Business Entities:**
+- Study `erpnext-database-design.md` for business entity relationships
+- Focus on how business data flows between different modules
+- Understand multi-company business scenarios and data segregation
+- Learn audit trail patterns for business compliance
 
-### Key Insights for New ERP Development
+**For Business-Driven Project Planning:**
+- Use `erp-development-roadmap.md` for business-focused implementation approach
+- Follow business module prioritization (CRM → Sales → Inventory → Accounting)
+- Reference business value delivery in each development phase
 
-**Architecture Principles:**
-- Document-centric design for flexible business entity modeling
-- Event-driven architecture for extensibility and customization
-- Multi-tenancy support for scalable SaaS deployment
-- Metadata-driven approach for rapid development and customization
+### Key Business Insights for New ERP Development
 
-**Business Logic Patterns:**
-- Status-driven workflows with percentage completion tracking
-- Double-entry accounting with multi-currency support
-- Real-time inventory tracking with multiple valuation methods
-- Role-based permissions with field-level security
+**Core Business Principles:**
+- Document-based business processes that mirror real-world business documents
+- Event-driven business workflows that automate manual processes
+- Multi-company business scenarios for group organizations
+- Flexible business rules that adapt to different industry requirements
 
-**Performance Strategies:**
-- Strategic database indexing for transaction-heavy tables
-- Caching layers for frequently accessed data
-- Background job processing for long-running operations
-- Query optimization patterns for large datasets
+**Essential Business Logic Patterns:**
+- Status-driven workflows with clear business milestones
+- Percentage completion tracking for business transparency
+- Double-entry accounting principles for financial accuracy
+- Real-time business data for informed decision making
+- Role-based business access reflecting organizational hierarchy
 
-**User Experience Guidelines:**
-- Progressive disclosure for complex enterprise workflows
-- Consistent design patterns across all modules
-- Mobile-first responsive design for field operations
-- Accessibility features for inclusive user experience
+**Business Process Automation:**
+- Automated reorder point management for inventory optimization
+- Payment reminder workflows for cash flow management
+- Recurring transaction automation for subscription businesses
+- Three-way matching for procurement control (PO → Receipt → Invoice)
+- Credit limit enforcement for risk management
+
+**Business User Experience Principles:**
+- Progressive disclosure that matches business complexity levels
+- Workspace design organized by business functions
+- Form flows that follow natural business process sequences
+- Dashboard design focused on business KPIs and actionable insights
+- Mobile access for field-based business operations
+
+**Business Compliance and Control:**
+- Audit trail maintenance for business compliance requirements
+- Approval workflows that enforce business authorization policies
+- Data segregation for multi-company business scenarios
+- Version control for critical business document changes
 
 This comprehensive analysis provides everything needed to build a modern, scalable ERP system using proven patterns from ERPNext's successful implementation.
