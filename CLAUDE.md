@@ -194,51 +194,32 @@ class TestSalesInvoice(ERPNextTestSuite):
 - Translation files managed via Crowdin
 - Regional customizations go in `erpnext/regional/`
 
-## Comprehensive ERP Documentation Structure
+## Comprehensive ERP Documentation Framework
 
-This repository now contains a complete documentation framework organized in `/docs/` for building modern ERP systems:
+This repository contains a complete documentation structure in `/docs/` for building modern ERP systems. 
 
-### Business-Focused Documentation
-1. **`docs/01-business-analysis/`** - Core business logic and workflows (PRIMARY FOCUS)
-   - Business overview and key concepts
-   - Detailed workflows (Order-to-Cash, Procure-to-Pay, Plan-to-Produce)
-   - Module-specific business logic (8 core modules)
-   - Business rules, validation patterns, and automation strategies
+**🎯 PRIMARY GUIDANCE: See `/docs/CLAUDE.md` for complete documentation structure and usage guidelines.**
 
-2. **`docs/08-business-processes/`** - Detailed process documentation
-   - Customer management and lifecycle processes
-   - Sales, purchasing, and fulfillment workflows
-   - Inventory and warehouse operations
-   - Financial processes and compliance requirements
+### Documentation Overview
+The `/docs/` directory contains 10 organized sections:
 
-### Implementation Planning
-3. **`docs/07-project-planning/`** - Your ERP project planning
-   - Project requirements and feature prioritization
-   - Timeline planning and resource allocation
-   - Risk management and success metrics
+**Business-Focused (User's Primary Interest)**:
+- `01-business-analysis/` - Core workflows and business logic 
+- `08-business-processes/` - Detailed process documentation
 
-4. **`docs/05-implementation-roadmap/`** - Development strategy and phases
-   - 4-phase implementation approach (Foundation → Enterprise)
-   - Technology stack recommendations and decisions
-   - MVP planning and business value delivery
+**Project Planning**:
+- `07-project-planning/` - User's specific ERP project
+- `05-implementation-roadmap/` - Development strategy  
+- `09-decision-log/` - Architecture decisions (ADRs)
 
-5. **`docs/09-decision-log/`** - Architecture Decision Records (ADRs)
-   - Technology stack and framework decisions
-   - Database and deployment strategy choices
-   - Documented rationale and trade-offs
+**Technical Reference**:
+- `02-technical-architecture/` - System architecture
+- `03-user-experience/` - UI/UX patterns
+- `04-database-design/` - Data modeling
 
-### Technical Reference
-6. **`docs/02-technical-architecture/`** - System architecture patterns
-7. **`docs/03-user-experience/`** - UI/UX design patterns
-8. **`docs/04-database-design/`** - Data modeling and relationships
-
-### Reference Materials
-9. **`docs/06-reference-materials/`** - Complete ERPNext analysis
-   - All original analysis documents moved here for reference
-   - Proven patterns and implementation insights
-   - Lessons learned from successful ERP implementation
-
-10. **`docs/10-learning-resources/`** - Educational materials and resources
+**Learning Resources**:
+- `06-reference-materials/` - Complete ERPNext analysis
+- `10-learning-resources/` - Educational materials
 
 ### Using This Analysis for ERP Development
 
