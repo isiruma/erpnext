@@ -194,45 +194,51 @@ class TestSalesInvoice(ERPNextTestSuite):
 - Translation files managed via Crowdin
 - Regional customizations go in `erpnext/regional/`
 
-## Comprehensive Analysis Documentation
+## Comprehensive ERP Documentation Structure
 
-This repository now contains detailed analysis documentation for building new ERP systems:
+This repository now contains a complete documentation framework organized in `/docs/` for building modern ERP systems:
 
-### Available Analysis Documents
-1. **`erpnext-business-analysis.md`** - Complete business logic and workflow analysis
-   - 8 core business modules (Accounts, Selling, Buying, Stock, Manufacturing, CRM, Projects, Assets)
-   - Key business workflows (Order-to-Cash, Procure-to-Pay, Plan-to-Produce)
-   - Business rules, validation patterns, and process automation
-   - Domain-specific implementations for Manufacturing, Retail, and Services
+### Business-Focused Documentation
+1. **`docs/01-business-analysis/`** - Core business logic and workflows (PRIMARY FOCUS)
+   - Business overview and key concepts
+   - Detailed workflows (Order-to-Cash, Procure-to-Pay, Plan-to-Produce)
+   - Module-specific business logic (8 core modules)
+   - Business rules, validation patterns, and automation strategies
 
-2. **`erpnext-technical-architecture.md`** - Comprehensive technical architecture guide
-   - Document-centric architecture and MVC implementation
-   - Controller inheritance hierarchy and event-driven patterns
-   - Data layer architecture with ORM patterns and caching strategies
-   - API design, security architecture, and extension mechanisms
-   - Performance optimization and deployment patterns
+2. **`docs/08-business-processes/`** - Detailed process documentation
+   - Customer management and lifecycle processes
+   - Sales, purchasing, and fulfillment workflows
+   - Inventory and warehouse operations
+   - Financial processes and compliance requirements
 
-3. **`erpnext-ui-patterns.md`** - UI/UX design patterns and frontend architecture
-   - Frontend technology stack and component-based architecture
-   - Workspace design with JSON-based configuration
-   - Form design patterns, validation, and responsive design
-   - Mobile optimization and accessibility features
-   - User experience patterns and progressive disclosure
+### Implementation Planning
+3. **`docs/07-project-planning/`** - Your ERP project planning
+   - Project requirements and feature prioritization
+   - Timeline planning and resource allocation
+   - Risk management and success metrics
 
-4. **`erpnext-database-design.md`** - Database design and relationship analysis
-   - Metadata-driven schema with JSON definitions
-   - Core entity relationships and hierarchical data models
-   - Financial data model with double-entry accounting
-   - Inventory management with stock ledger and real-time balances
-   - Multi-tenancy design and performance optimization
-   - Audit trails and data integrity patterns
+4. **`docs/05-implementation-roadmap/`** - Development strategy and phases
+   - 4-phase implementation approach (Foundation → Enterprise)
+   - Technology stack recommendations and decisions
+   - MVP planning and business value delivery
 
-5. **`erp-development-roadmap.md`** - Complete implementation roadmap
-   - 4-phase development strategy (Foundation → Core → Advanced → Enterprise)
-   - Technology stack recommendations with decision matrices
-   - Architecture decisions and implementation best practices
-   - Code organization, testing strategies, and security practices
-   - Timeline estimates and MVP approach
+5. **`docs/09-decision-log/`** - Architecture Decision Records (ADRs)
+   - Technology stack and framework decisions
+   - Database and deployment strategy choices
+   - Documented rationale and trade-offs
+
+### Technical Reference
+6. **`docs/02-technical-architecture/`** - System architecture patterns
+7. **`docs/03-user-experience/`** - UI/UX design patterns
+8. **`docs/04-database-design/`** - Data modeling and relationships
+
+### Reference Materials
+9. **`docs/06-reference-materials/`** - Complete ERPNext analysis
+   - All original analysis documents moved here for reference
+   - Proven patterns and implementation insights
+   - Lessons learned from successful ERP implementation
+
+10. **`docs/10-learning-resources/`** - Educational materials and resources
 
 ### Using This Analysis for ERP Development
 
