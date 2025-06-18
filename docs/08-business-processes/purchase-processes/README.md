@@ -53,7 +53,16 @@ Purchase processes control costs and ensure supply continuity:
 - **Manufacturing Processes** - Material requirements and production planning
 - **Quality Processes** - Incoming inspection and supplier performance
 
-## Examples of Expected Content
+## Documented Purchase Processes
+
+### **📋 [Simple Purchase Order](./simple-purchase-order/)**
+**Complete implementation documentation for simplified Purchase Order module**
+- Reduced complexity (30 fields vs 164 in full ERPNext)
+- 4-5 week implementation timeline
+- Technology-agnostic design patterns
+- Production-ready with essential business logic
+
+## Future Purchase Process Documentation
 
 - `vendor-management.md` - Supplier onboarding, evaluation, and relationship management
 - `procurement-process.md` - Complete Material Request to Receipt workflow
