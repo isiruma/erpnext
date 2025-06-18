@@ -4,24 +4,53 @@
 
 This document provides complete guidance on the Purchase Order status management system, covering workflow definitions, business rules, technical implementation, and best practices. The status system ensures proper procurement control while maintaining flexibility for different business scenarios.
 
+> **⚠️ IMPORTANT: Updated Based on Real ERPNext Testing**
+> 
+> This documentation has been updated to reflect actual ERPNext behavior, which differs significantly from typical ERP assumptions:
+> 
+> **Key Differences Discovered:**
+> - ✅ **Default Submitted Status**: "To Receive and Bill" (not "Submitted")
+> - ✅ **Editable After Submission**: Items can be added/modified even after submission
+> - ✅ **9 Status Options**: Much more complex than simplified 6-status model
+> - ✅ **Flexible Workflow**: Bi-directional transitions based on receiving vs billing progress
+> - ✅ **Unique ERPNext Feature**: Unlike other ERPs, submitted orders remain editable
+> 
+> This makes ERPNext extremely flexible but requires different implementation assumptions.
+
 ## 📊 Status Workflow Overview
 
-The Purchase Order follows a clear, linear progression through defined business states:
+The Purchase Order follows a progression through defined business states based on actual ERPNext behavior:
 
 ```mermaid
 graph LR
-    A[Draft] --> B[Submitted]
-    B --> C[Partially Received]
-    C --> D[Received]
-    D --> E[Completed]
+    A[Draft] --> B[To Receive and Bill]
+    A --> H[On Hold]
+    B --> C[To Receive]
+    B --> D[To Bill]
+    C --> E[Completed]
+    D --> E
     B --> F[Cancelled]
     C --> F
     D --> F
+    B --> G[Closed]
+    E --> G
 ```
 
+**Complete ERPNext Status Options:**
+- **Draft** - Initial creation phase
+- **On Hold** - Temporarily suspended
+- **To Receive and Bill** - Default submitted status (both receiving and billing pending)
+- **To Receive** - Items need to be received (already billed)
+- **To Bill** - Items received, billing pending
+- **Completed** - Fully processed (received and billed)
+- **Cancelled** - Order terminated
+- **Closed** - Administratively closed
+- **Delivered** - Special delivery status
+
 ### **Key Workflow Principles:**
-- **Linear Progress**: Each status represents a clear business milestone
-- **One-Way Flow**: Generally moves forward, with cancellation as exception
+- **Flexible Progress**: Status reflects current procurement state (receiving vs billing)
+- **Bi-Directional Flow**: Can move between "To Receive" and "To Bill" based on progress
+- **Editable After Submission**: Items can be modified even after submission (unique to ERPNext)
 - **Role-Based Control**: Different users can perform different status transitions
 - **Audit Trail**: All status changes are logged with user and timestamp
 
@@ -42,55 +71,68 @@ graph LR
 - No stock reservations made
 - No financial commitments created
 
-### **2. Submitted (docstatus = 1)**
-- **Purpose**: Official purchase order ready for processing
-- **Business Meaning**: Formal commitment to purchase, supplier authorization
-- **User Actions**: No editing allowed, can only cancel or mark as received
-- **System Behavior**: Document becomes immutable, enables downstream processes
-- **Who Can Access**: All purchase users can view, only managers can cancel
-- **Visual Indicator**: Green indicator, "SUBMITTED" badge
+### **2. On Hold**
+- **Purpose**: Temporarily suspend order processing
+- **Business Meaning**: Order is paused, no further action until resumed
+- **User Actions**: Can resume to active status, can modify order details
+- **System Behavior**: No automatic processing, blocks receipts and billing
+- **Who Can Access**: Purchase managers can put on hold and resume
+- **Visual Indicator**: Yellow/orange indicator, "ON HOLD" badge
 
 **Business Rules:**
-- Document cannot be modified (immutable)
+- Prevents creation of Purchase Receipts and Invoices
+- Can be resumed to previous active status
+- Order details can still be modified while on hold
+- No automatic processing occurs
+
+### **3. To Receive and Bill (docstatus = 1)**
+- **Purpose**: Default submitted status - both receiving and billing are pending
+- **Business Meaning**: Formal commitment to purchase, ready for receipt and billing
+- **User Actions**: **CAN STILL EDIT ITEMS** - add new items, modify quantities, rates
+- **System Behavior**: Enables downstream processes, but remains editable
+- **Who Can Access**: All purchase users can view, purchase users can edit
+- **Visual Indicator**: Blue indicator, "TO RECEIVE AND BILL" badge
+
+**Business Rules:**
+- **Items can be added and modified** (unlike typical submitted documents)
 - Triggers supplier notification (if configured)
 - Enables creation of Purchase Receipts
 - Enables creation of Purchase Invoices
 - Stock may be reserved (if configured)
 - Financial commitment is recorded
+- **This is the standard submitted status in ERPNext**
 
-### **3. Partially Received**
-- **Purpose**: Some items have been received but order is incomplete
-- **Business Meaning**: Partial delivery has occurred, remaining items pending
-- **User Actions**: Can mark remaining items as received, can still cancel with approval
-- **System Behavior**: Tracks percentage completion, enables partial invoicing
-- **Who Can Access**: Warehouse staff can update, purchase team can view
-- **Visual Indicator**: Yellow/orange indicator, "PARTIALLY RECEIVED" badge
-
-**Business Rules:**
-- Percentage received is calculated automatically
-- Stock entries created for received items
-- Partial invoicing is allowed
-- Remaining items can still be received
-- Can be cancelled with manager approval
-- Tracks individual item receipt status
-
-### **4. Received**
-- **Purpose**: All items have been physically received
-- **Business Meaning**: Goods delivery is complete, ready for final processing
-- **User Actions**: Can mark as completed when billing is done
-- **System Behavior**: Cannot be cancelled easily, enables full invoice creation
-- **Who Can Access**: Purchase and accounts teams
-- **Visual Indicator**: Blue indicator, "RECEIVED" badge
+### **4. To Receive**
+- **Purpose**: Items need to be received (billing may be partially or fully done)
+- **Business Meaning**: Physical receipt pending, financial processing may be in progress
+- **User Actions**: Can receive items, can still modify order details
+- **System Behavior**: Focuses on goods receipt, billing may be progressing separately
+- **Who Can Access**: Warehouse staff for receiving, purchase team for modifications
+- **Visual Indicator**: Purple indicator, "TO RECEIVE" badge
 
 **Business Rules:**
-- 100% of items have been received
-- All stock entries are complete
-- Full invoicing is enabled
-- Cannot be cancelled without special approval
-- Ready for accounts payable processing
-- Quality control processes may be triggered
+- Items can still be added and modified
+- Stock entries are pending for some/all items
+- Purchase receipts can be created
+- Billing may be in progress or complete
+- Can transition to "To Bill" or "Completed" based on progress
 
-### **5. Completed**
+### **5. To Bill**
+- **Purpose**: Items have been received, billing/invoicing is pending
+- **Business Meaning**: Goods delivery complete, financial processing pending
+- **User Actions**: Can create invoices, can still modify order details
+- **System Behavior**: Focuses on invoice creation, receiving is complete
+- **Who Can Access**: Accounts team for billing, purchase team for modifications
+- **Visual Indicator**: Orange indicator, "TO BILL" badge
+
+**Business Rules:**
+- All or most items have been received
+- Stock entries are complete
+- Purchase invoices can be created
+- Items can still be added and modified
+- Transitions to "Completed" when fully billed
+
+### **6. Completed**
 - **Purpose**: All items received and all invoices processed
 - **Business Meaning**: Purchase order lifecycle is finished, fully processed
 - **User Actions**: Read-only, for reference and reporting only
@@ -106,7 +148,7 @@ graph LR
 - Available for historical reporting
 - Complete audit trail preserved
 
-### **6. Cancelled (docstatus = 2)**
+### **7. Cancelled (docstatus = 2)**
 - **Purpose**: Purchase order has been reversed/cancelled
 - **Business Meaning**: Order was terminated before completion
 - **User Actions**: Read-only, for audit purposes only
@@ -122,21 +164,63 @@ graph LR
 - Cancellation reason is required
 - Complete audit trail is maintained
 
+### **8. Closed**
+- **Purpose**: Administratively closed purchase order
+- **Business Meaning**: Order is terminated by administrative action (not cancellation)
+- **User Actions**: Can be reopened by authorized users
+- **System Behavior**: Prevents further processing, maintains transaction history
+- **Who Can Access**: Purchase managers and administrators
+- **Visual Indicator**: Gray indicator, "CLOSED" badge
+
+**Business Rules:**
+- Can be reopened unlike cancelled orders
+- Preserves all transaction history
+- Blocks new receipts and billing
+- Used for administrative closure vs business cancellation
+- May have partial transactions completed
+
+### **9. Delivered**
+- **Purpose**: Special status indicating delivery completion
+- **Business Meaning**: All items have been delivered to final destination
+- **User Actions**: Primarily for information and reporting
+- **System Behavior**: Indicates logistics completion, may allow billing
+- **Who Can Access**: Logistics and purchase teams
+- **Visual Indicator**: Green delivery icon, "DELIVERED" badge
+
+**Business Rules:**
+- Focuses on delivery/logistics completion
+- May still allow billing processes
+- Used in complex delivery scenarios
+- Tracks final delivery confirmation
+- May transition to other statuses for billing completion
+
 ## 🔄 Status Transitions and Business Rules
 
-### **Valid Transitions Matrix:**
+### **Valid Transitions Matrix (Actual ERPNext Behavior):**
 
 | From Status | To Status | Condition | Required Role | Additional Requirements |
 |-------------|-----------|-----------|---------------|------------------------|
-| Draft | Submitted | Has items, valid data | Purchase User | Items qty > 0, valid supplier |
+| Draft | To Receive and Bill | Has items, valid data | Purchase User | Items qty > 0, valid supplier |
+| Draft | On Hold | Temporary suspension | Purchase Manager | Reason for hold |
 | Draft | Cancelled | Any time | Purchase User | None |
-| Submitted | Partially Received | Some items received | Warehouse Staff | At least one item marked received |
-| Submitted | Received | All items received | Warehouse Staff | All items marked received |
-| Submitted | Cancelled | Not yet received | Purchase Manager | No items received yet |
-| Partially Received | Received | Remaining items received | Warehouse Staff | All remaining items received |
-| Partially Received | Cancelled | Manager approval | Purchase Manager | Cancellation reason required |
-| Received | Completed | All invoices processed | Accounts Team | 100% billed |
-| Received | Cancelled | Special circumstances | Purchase Manager | Special approval workflow |
+| To Receive and Bill | To Receive | Billing started/complete | Accounts Team | Invoice creation in progress |
+| To Receive and Bill | To Bill | Items partially/fully received | Warehouse Staff | Receipt creation started |
+| To Receive and Bill | Completed | Both fully received and billed | System Auto | 100% received and billed |
+| To Receive and Bill | Cancelled | Manager decision | Purchase Manager | Cancellation reason |
+| To Receive and Bill | Closed | Administrative action | Purchase Manager | Administrative closure |
+| To Receive | To Bill | All items received | Warehouse Staff | 100% receipt completion |
+| To Receive | Completed | Items received and billing done | System Auto | 100% received and billed |
+| To Bill | To Receive | New items added | Purchase User | Additional items requiring receipt |
+| To Bill | Completed | All invoicing done | Accounts Team | 100% billing completion |
+| On Hold | To Receive and Bill | Resume order | Purchase Manager | Resume action |
+| Any Active Status | On Hold | Temporary suspension | Purchase Manager | Hold reason |
+| Closed | To Receive and Bill | Reopen order | Purchase Manager | Reopen authorization |
+
+**Key ERPNext Behaviors:**
+- **Items can be modified in ALL active statuses** (not just Draft)
+- **"To Receive and Bill" is the default submitted status** (not "Submitted")
+- **Status automatically updates based on receipt and billing progress**
+- **Multiple status transitions possible based on parallel processing**
 
 ### **Detailed Validation Logic:**
 
@@ -248,7 +332,8 @@ CREATE TABLE purchase_order (
     
     -- Constraints
     CONSTRAINT chk_po_status CHECK (status IN (
-        'Draft', 'Submitted', 'Partially Received', 'Received', 'Completed', 'Cancelled'
+        '', 'Draft', 'On Hold', 'To Receive and Bill', 'To Bill', 'To Receive', 
+        'Completed', 'Cancelled', 'Closed', 'Delivered'
     )),
     CONSTRAINT chk_po_docstatus CHECK (docstatus IN (0, 1, 2)),
     CONSTRAINT chk_po_percentages CHECK (
@@ -287,11 +372,14 @@ from typing import Optional, Dict, Any
 
 class PurchaseOrderStatus(Enum):
     DRAFT = "Draft"
-    SUBMITTED = "Submitted"
-    PARTIALLY_RECEIVED = "Partially Received"
-    RECEIVED = "Received"
+    ON_HOLD = "On Hold"
+    TO_RECEIVE_AND_BILL = "To Receive and Bill"
+    TO_RECEIVE = "To Receive"
+    TO_BILL = "To Bill"
     COMPLETED = "Completed"
     CANCELLED = "Cancelled"
+    CLOSED = "Closed"
+    DELIVERED = "Delivered"
 
 class PurchaseOrderStatusManager:
     
@@ -299,10 +387,10 @@ class PurchaseOrderStatusManager:
         self.purchase_order = purchase_order
     
     def submit(self, user) -> Dict[str, Any]:
-        """Submit purchase order (Draft → Submitted)"""
+        """Submit purchase order (Draft → To Receive and Bill)"""
         self._validate_transition(
             PurchaseOrderStatus.DRAFT, 
-            PurchaseOrderStatus.SUBMITTED, 
+            PurchaseOrderStatus.TO_RECEIVE_AND_BILL, 
             user
         )
         
@@ -314,16 +402,16 @@ class PurchaseOrderStatusManager:
             if item.qty <= 0 or item.rate <= 0:
                 raise ValidationError(f"Invalid quantity or rate for item {item.item_code}")
         
-        # Update status
+        # Update status - ERPNext uses "To Receive and Bill" as default submitted status
         old_status = self.purchase_order.status
-        self.purchase_order.status = PurchaseOrderStatus.SUBMITTED.value
+        self.purchase_order.status = PurchaseOrderStatus.TO_RECEIVE_AND_BILL.value
         self.purchase_order.docstatus = 1
         self.purchase_order.submitted_at = datetime.now()
         self.purchase_order.updated_by = user.email
         self.purchase_order.save()
         
         # Log status change
-        self._log_status_change(old_status, PurchaseOrderStatus.SUBMITTED.value, user)
+        self._log_status_change(old_status, PurchaseOrderStatus.TO_RECEIVE_AND_BILL.value, user)
         
         # Business logic
         self._update_item_last_purchase_rates()
@@ -332,7 +420,70 @@ class PurchaseOrderStatusManager:
         return {
             "status": self.purchase_order.status,
             "docstatus": self.purchase_order.docstatus,
-            "submitted_at": self.purchase_order.submitted_at
+            "submitted_at": self.purchase_order.submitted_at,
+            "editable": True  # Important: ERPNext allows editing even after submission
+        }
+    
+    def add_or_modify_items(self, items_data: list, user) -> Dict[str, Any]:
+        """Add or modify items in submitted purchase order (ERPNext unique feature)"""
+        
+        # Validate that order is in editable submitted status
+        editable_statuses = [
+            PurchaseOrderStatus.TO_RECEIVE_AND_BILL.value,
+            PurchaseOrderStatus.TO_RECEIVE.value,
+            PurchaseOrderStatus.TO_BILL.value
+        ]
+        
+        if self.purchase_order.status not in editable_statuses:
+            raise ValidationError(f"Cannot modify items in status: {self.purchase_order.status}")
+        
+        if not self._has_purchase_permission(user):
+            raise ValidationError("Insufficient permissions to modify purchase order items")
+        
+        # Add or update items
+        modified_items = []
+        for item_data in items_data:
+            if item_data.get('item_id'):
+                # Update existing item
+                item = self.purchase_order.items.get(id=item_data['item_id'])
+                item.qty = item_data.get('qty', item.qty)
+                item.rate = item_data.get('rate', item.rate)
+                item.save()
+                modified_items.append(f"Modified {item.item_code}")
+            else:
+                # Add new item
+                new_item = PurchaseOrderItem.objects.create(
+                    parent=self.purchase_order,
+                    item_code=item_data['item_code'],
+                    qty=item_data['qty'],
+                    rate=item_data['rate'],
+                    warehouse_id=item_data['warehouse_id']
+                )
+                modified_items.append(f"Added {new_item.item_code}")
+        
+        # Recalculate totals
+        self._recalculate_totals()
+        
+        # Update modification timestamp
+        self.purchase_order.updated_by = user.email
+        self.purchase_order.save()
+        
+        # Log the modification
+        self._log_status_change(
+            self.purchase_order.status, 
+            self.purchase_order.status, 
+            user, 
+            reason=f"Items modified: {', '.join(modified_items)}"
+        )
+        
+        return {
+            "status": self.purchase_order.status,
+            "modified_items": modified_items,
+            "new_totals": {
+                "net_total": self.purchase_order.net_total,
+                "grand_total": self.purchase_order.grand_total
+            },
+            "message": "Items successfully modified in submitted purchase order"
         }
     
     def mark_received(self, received_items: list, user, notes: str = "") -> Dict[str, Any]:
@@ -508,17 +659,62 @@ Content-Type: application/json
   "success": true,
   "data": {
     "id": "SPO-2025-0001",
-    "status": "Submitted",
+    "status": "To Receive and Bill",
     "docstatus": 1,
     "submitted_at": "2025-06-18T11:00:00Z",
     "updated_at": "2025-06-18T11:00:00Z",
-    "updated_by": "user@company.com"
+    "updated_by": "user@company.com",
+    "editable": true,
+    "can_add_items": true,
+    "can_modify_items": true
   },
   "message": "Purchase order submitted successfully"
 }
 ```
 
-### **2. Mark Items as Received**
+### **2. Modify Items in Submitted Order (ERPNext Unique Feature)**
+
+**Endpoint:** `PATCH /api/purchase-orders/{id}/items`
+
+**Request Body:**
+```json
+{
+  "items": [
+    {
+      "item_id": "SPO-2025-0001-1",
+      "qty": 15,
+      "rate": 55.0
+    },
+    {
+      "item_code": "ITEM-003",
+      "qty": 5,
+      "rate": 75.0,
+      "warehouse_id": "WH-001"
+    }
+  ],
+  "notes": "Updated quantities based on revised requirements"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "SPO-2025-0001",
+    "status": "To Receive and Bill",
+    "modified_items": ["Modified ITEM-001", "Added ITEM-003"],
+    "new_totals": {
+      "net_total": 1200.00,
+      "grand_total": 1320.00
+    },
+    "updated_at": "2025-06-18T12:30:00Z"
+  },
+  "message": "Items successfully modified in submitted purchase order"
+}
+```
+
+### **3. Mark Items as Received**
 
 **Endpoint:** `PATCH /api/purchase-orders/{id}/receive`
 
@@ -548,8 +744,9 @@ Content-Type: application/json
   "success": true,
   "data": {
     "id": "SPO-2025-0001",
-    "status": "Received",
+    "status": "To Bill",
     "per_received": 100.0,
+    "per_billed": 0.0,
     "received_at": "2025-06-20T14:30:00Z",
     "stock_entries": [
       {
@@ -557,7 +754,9 @@ Content-Type: application/json
         "type": "Receipt",
         "total_value": 1100.00
       }
-    ]
+    ],
+    "editable": true,
+    "can_add_items": true
   },
   "message": "Items received successfully"
 }
@@ -1101,3 +1300,62 @@ class StatusChangeHandler:
    - Draft orders: Auto-cleanup after 90 days
 
 This comprehensive status management system ensures proper procurement control while maintaining flexibility for different business scenarios and compliance requirements.
+
+## 🎯 Key Takeaways for Implementation
+
+### **Critical ERPNext Behaviors to Remember:**
+
+1. **"To Receive and Bill" is the Real Submitted Status**
+   - Don't assume "Submitted" status exists
+   - Default submission leads to "To Receive and Bill"
+   - This status allows both receiving and billing processes
+
+2. **Submitted Orders Remain Editable**
+   - Unlike most ERPs, ERPNext allows item modifications after submission
+   - New items can be added to submitted orders
+   - Quantities and rates can be changed
+   - This is a unique ERPNext feature that differentiates it from other systems
+
+3. **Status is Process-Driven, Not Linear**
+   - Status reflects current business state (what needs to be done)
+   - Can move between "To Receive" and "To Bill" based on progress
+   - Not a simple linear progression like Draft → Submitted → Completed
+
+4. **Nine Status Options Provide Flexibility**
+   - Each status serves a specific business purpose
+   - "On Hold" and "Closed" provide administrative controls
+   - "Delivered" handles logistics completion separately from billing
+
+### **Implementation Recommendations:**
+
+#### **For API Design:**
+```javascript
+// Always check for editable status
+const editableStatuses = [
+  'To Receive and Bill',
+  'To Receive', 
+  'To Bill'
+];
+
+const canModifyItems = editableStatuses.includes(purchaseOrder.status);
+```
+
+#### **For UI Design:**
+- Show "Add Item" and "Modify" buttons even for submitted orders
+- Indicate that submitted orders are still editable (unique to ERPNext)
+- Use status-appropriate colors and labels
+- Show progress indicators for receiving and billing separately
+
+#### **For Business Logic:**
+- Don't assume immutability after submission
+- Allow item modifications in all active statuses
+- Track both receiving and billing progress independently
+- Handle bi-directional status transitions
+
+#### **For Testing:**
+- Test item modification after submission
+- Verify status transitions based on receiving/billing progress
+- Test all 9 status options and their business rules
+- Validate that "To Receive and Bill" is the default submitted status
+
+This understanding is crucial for building applications that work correctly with ERPNext's unique and flexible Purchase Order system.
