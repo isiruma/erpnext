@@ -2,6 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🎯 CRITICAL: Always Follow Complete Documentation Framework
+
+**IMPORTANT: For ANY ERP-related work, analysis, or planning, Claude Code MUST first read and follow the comprehensive documentation framework located in `/docs/`.**
+
+### **Primary Guidance Sources (READ THESE FIRST):**
+1. **`/docs/README.md`** - Main documentation index and business-first approach
+2. **`/docs/CLAUDE.md`** - Complete ERP documentation framework guidance  
+3. **`/docs/01-business-analysis/README.md`** - Business logic and workflow priorities
+
+### **Business-First Approach Requirement:**
+- **PRIMARY FOCUS**: Business logic and workflows over technical implementation
+- **SECONDARY FOCUS**: Business process flows and user experience patterns  
+- **MINIMAL FOCUS**: Code implementation details and technical syntax
+
+**Always prioritize understanding business requirements, workflows, and value delivery before diving into technical implementation.**
+
 ## Overview
 
 ERPNext is a comprehensive open-source ERP system built on the Frappe Framework. It's a full-stack application using Python for backend logic and JavaScript/Vue.js for frontend interfaces, with MariaDB/MySQL as the primary database.
@@ -194,11 +210,26 @@ class TestSalesInvoice(ERPNextTestSuite):
 - Translation files managed via Crowdin
 - Regional customizations go in `erpnext/regional/`
 
-## Comprehensive ERP Documentation Framework
+## 📚 Comprehensive ERP Documentation Framework Integration
 
 This repository contains a complete documentation structure in `/docs/` for building modern ERP systems. 
 
 **🎯 PRIMARY GUIDANCE: See `/docs/CLAUDE.md` for complete documentation structure and usage guidelines.**
+
+### **When to Use Documentation Framework vs ERPNext Guidance:**
+
+**Use `/docs/` framework for:**
+- Any ERP business analysis or planning work
+- Understanding business workflows and processes
+- Project planning and requirements analysis
+- Business-focused implementation guidance
+- Learning ERP concepts and best practices
+
+**Use this file (root `/CLAUDE.md`) for:**
+- ERPNext-specific development tasks
+- Technical implementation in this codebase
+- Code quality, testing, and deployment
+- Framework-specific patterns and conventions
 
 ### Documentation Overview
 The `/docs/` directory contains 10 organized sections:
@@ -290,3 +321,15 @@ The `/docs/` directory contains 10 organized sections:
 - Version control for critical business document changes
 
 This comprehensive analysis provides everything needed to build a modern, scalable ERP system using proven patterns from ERPNext's successful implementation.
+
+## 🔄 Integration Reminder for Claude Code
+
+**ALWAYS remember to:**
+1. **Check `/docs/README.md` first** for any ERP-related requests
+2. **Follow business-first approach** as defined in the documentation framework
+3. **Reference core workflows** (Order-to-Cash, Procure-to-Pay, Plan-to-Produce) when relevant
+4. **Prioritize business value delivery** over technical complexity
+5. **Use progressive disclosure** for complex business processes
+6. **Focus on document-centric, event-driven patterns** for ERP development
+
+**The documentation framework in `/docs/` should guide your approach to any ERP analysis, planning, or business workflow discussions. This file provides ERPNext-specific technical implementation guidance.**
