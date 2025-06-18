@@ -95,6 +95,7 @@ graph LR
 
 **Business Rules:**
 - **Items can be added and modified** (unlike typical submitted documents)
+- **Cannot delete items which have already been received** (critical constraint)
 - Triggers supplier notification (if configured)
 - Enables creation of Purchase Receipts
 - Enables creation of Purchase Invoices
@@ -460,6 +461,55 @@ class PurchaseOrderStatusManager:
                     warehouse_id=item_data['warehouse_id']
                 )
                 modified_items.append(f"Added {new_item.item_code}")
+    
+    def delete_item(self, item_id: str, user) -> Dict[str, Any]:
+        """Delete item from purchase order (with received item restriction)"""
+        
+        # Validate permissions
+        if not self._has_purchase_permission(user):
+            raise ValidationError("Insufficient permissions to delete purchase order items")
+        
+        # Get the item
+        try:
+            item = self.purchase_order.items.get(id=item_id)
+        except PurchaseOrderItem.DoesNotExist:
+            raise ValidationError(f"Item with ID {item_id} not found")
+        
+        # CRITICAL BUSINESS RULE: Cannot delete items which have already been received
+        if item.received_qty > 0:
+            raise ValidationError(
+                f"Cannot delete item {item.item_code}: {item.received_qty} units have already been received. "
+                f"You can only delete items that have not been received yet."
+            )
+        
+        # Delete the item
+        item_code = item.item_code
+        item.delete()
+        
+        # Recalculate totals
+        self._recalculate_totals()
+        
+        # Update modification timestamp
+        self.purchase_order.updated_by = user.email
+        self.purchase_order.save()
+        
+        # Log the deletion
+        self._log_status_change(
+            self.purchase_order.status, 
+            self.purchase_order.status, 
+            user, 
+            reason=f"Deleted item: {item_code}"
+        )
+        
+        return {
+            "status": self.purchase_order.status,
+            "deleted_item": item_code,
+            "new_totals": {
+                "net_total": self.purchase_order.net_total,
+                "grand_total": self.purchase_order.grand_total
+            },
+            "message": f"Item {item_code} successfully deleted from purchase order"
+        }
         
         # Recalculate totals
         self._recalculate_totals()
@@ -823,7 +873,164 @@ Content-Type: application/json
 }
 ```
 
-### **5. Get Status History**
+### **5. Hold Purchase Order**
+
+**Endpoint:** `POST /api/purchase-orders/{id}/hold`
+
+**Request Body:**
+```json
+{
+  "reason": "Waiting for budget approval",
+  "expected_resume_date": "2025-06-25"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "SPO-2025-0001",
+    "status": "On Hold",
+    "held_at": "2025-06-18T16:00:00Z",
+    "held_by": "manager@company.com",
+    "hold_reason": "Waiting for budget approval",
+    "expected_resume_date": "2025-06-25",
+    "can_resume": true,
+    "blocked_actions": ["create_receipt", "create_invoice"]
+  },
+  "message": "Purchase order put on hold successfully"
+}
+```
+
+### **6. Resume Purchase Order**
+
+**Endpoint:** `POST /api/purchase-orders/{id}/resume`
+
+**Request Body:**
+```json
+{
+  "resume_reason": "Budget approved, proceeding with order"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "SPO-2025-0001",
+    "status": "To Receive and Bill",
+    "resumed_at": "2025-06-20T09:00:00Z",
+    "resumed_by": "manager@company.com",
+    "resume_reason": "Budget approved, proceeding with order",
+    "hold_duration_hours": 64,
+    "can_proceed": true
+  },
+  "message": "Purchase order resumed successfully"
+}
+```
+
+### **7. Close Purchase Order**
+
+**Endpoint:** `POST /api/purchase-orders/{id}/close`
+
+**Request Body:**
+```json
+{
+  "close_reason": "Partially delivered, closing remaining items",
+  "force_close": false
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "SPO-2025-0001",
+    "status": "Closed",
+    "closed_at": "2025-06-22T14:00:00Z",
+    "closed_by": "manager@company.com",
+    "close_reason": "Partially delivered, closing remaining items",
+    "final_per_received": 85.0,
+    "final_per_billed": 85.0,
+    "can_reopen": true
+  },
+  "message": "Purchase order closed successfully"
+}
+```
+
+### **8. Reopen Purchase Order**
+
+**Endpoint:** `POST /api/purchase-orders/{id}/reopen`
+
+**Request Body:**
+```json
+{
+  "reopen_reason": "Supplier confirmed delivery of remaining items"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "SPO-2025-0001",
+    "status": "To Receive and Bill",
+    "reopened_at": "2025-06-23T10:00:00Z",
+    "reopened_by": "user@company.com",
+    "reopen_reason": "Supplier confirmed delivery of remaining items",
+    "previous_status": "Closed",
+    "can_proceed": true
+  },
+  "message": "Purchase order reopened successfully"
+}
+```
+
+### **9. Delete Purchase Order Item**
+
+**Endpoint:** `DELETE /api/purchase-orders/{id}/items/{item_id}`
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "SPO-2025-0001",
+    "status": "To Receive and Bill",
+    "deleted_item": "ITEM-001",
+    "new_totals": {
+      "net_total": 900.00,
+      "grand_total": 990.00
+    },
+    "item_count": 2,
+    "modification_log": "Item ITEM-001 deleted by user@company.com"
+  },
+  "message": "Item ITEM-001 successfully deleted from purchase order"
+}
+```
+
+**Error Response (400 Bad Request) - When item has been received:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "CANNOT_DELETE_RECEIVED_ITEM",
+    "message": "Cannot delete item ITEM-001: 50 units have already been received. You can only delete items that have not been received yet.",
+    "details": {
+      "item_code": "ITEM-001",
+      "received_qty": 50,
+      "total_qty": 100,
+      "can_modify_qty": true,
+      "can_delete": false
+    }
+  }
+}
+```
+
+### **10. Get Status History**
 
 **Endpoint:** `GET /api/purchase-orders/{id}/status-history`
 
@@ -843,7 +1050,7 @@ Content-Type: application/json
       },
       {
         "from_status": "Draft",
-        "to_status": "Submitted",
+        "to_status": "To Receive and Bill",
         "changed_by": "user@company.com",
         "changed_at": "2025-06-18T11:00:00Z",
         "reason": "Order finalized and ready for processing"
