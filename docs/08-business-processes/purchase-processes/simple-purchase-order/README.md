@@ -54,6 +54,15 @@ This folder contains comprehensive documentation for implementing a simplified P
 - Deployment configurations and production checklist
 - Performance optimization guidelines
 
+### 🔄 [06 - Status Management Guide](./06-status-management-guide.md)
+**Comprehensive status workflow documentation:**
+- Complete status definitions and business rules
+- Status transition validation and authorization
+- Technical implementation with code examples
+- API endpoints for status management
+- Error handling and troubleshooting
+- Best practices and monitoring guidelines
+
 ## 🏗️ Core Features
 
 ### Simplified Functionality
